@@ -22,7 +22,7 @@ This repository contains a complete self-hosted media server setup using Docker 
 1. **Clone the repo**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/media-server-docker.git
+git clone https://github.com/sstathatos/media-server-docker.git
 cd media-server-docker
 ```
 
@@ -38,12 +38,17 @@ MEDIADIR=/path/to/your/media
 3. Start the stack
 ``` docker compose up -d ```
 
-4. Access the services
+5. **Access the services**
 
-Service	Port	URL
-Plex	32400	http://localhost:32400
-Bazarr	6767	http://localhost:6767
-Sonarr	8989	http://localhost:8989
-Radarr	7878	http://localhost:7878
-Deluge (via VPN)	8112	http://localhost:8112
-Jackett (via VPN)	9117	http://localhost:9117
+Use the following URLs (assuming default ports and localhost access):
+
+| Service | Port  | URL                         |
+|---------|-------|-----------------------------|
+| Plex    | 32400 | http://localhost:32400      |
+| Bazarr  | 6767  | http://localhost:6767       |
+| Sonarr  | 8989  | http://localhost:8989       |
+| Radarr  | 7878  | http://localhost:7878       |
+| Deluge  | 8112  | http://localhost:8112       |
+| Jackett | 9117  | http://localhost:9117       |
+
+> ℹ️ **Deluge** and **Jackett** are routed through the **Gluetun VPN container** for privacy.
