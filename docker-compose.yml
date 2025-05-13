@@ -1,0 +1,114 @@
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:1.41.6
+    container_name: plex
+    restart: unless-stopped
+    volumes:
+      - ./config/plexdata/config:/config
+      - ./config/transcode:/transcode
+      - $MEDIADIR/media:/data/media
+    ports:
+      - "32400:32400/tcp"
+      - "3005:3005/tcp"
+      - "8324:8324/tcp"
+      - "32469:32469/tcp"
+      - "32410:32410/udp"
+      - "32412-32414:32412-32414/udp"
+    devices:
+      - /dev/dri:/dev/dri
+    privileged: true
+    pull_policy: always
+    networks:
+      - media_net
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:1.5.1
+    container_name: bazarr
+    restart: unless-stopped
+    volumes:
+      - ./config/bazarr:/config
+      - $MEDIADIR/media:/data/media
+    ports:
+      - "6767:6767/tcp"
+    pull_policy: always
+    networks:
+      - media_net
+
+  vpn:
+    image: qmcgaw/gluetun:v3.40.0
+    container_name: vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=private internet access
+      - OPENVPN_USER=${OPENVPN_USER}
+      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      - SERVER_REGIONS=Netherlands
+      - TZ=Europe/Athens
+      - FIREWALL=on
+      - DOT=on
+      - HEALTH_TARGET_ADDRESS=1.1.1.1:53
+    ports:
+      - "8112:8112/tcp"
+      - "9117:9117/tcp"
+    restart: unless-stopped
+    networks:
+      - media_net
+
+  deluge:
+    image: lscr.io/linuxserver/deluge:2.1.1
+    container_name: deluge
+    network_mode: "service:vpn"
+    depends_on:
+      - vpn
+    volumes:
+      - ./config/deluge:/config
+      - $MEDIADIR/torrents:/data/torrents
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:5.21.1
+    container_name: radarr
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/radarr:/config
+      - $MEDIADIR:/data
+    ports:
+      - "7878:7878/tcp"
+    pull_policy: always
+    networks:
+      - media_net
+  
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:4.0.14
+    container_name: sonarr
+    restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./config/sonarr:/config
+      - $MEDIADIR:/data
+    ports:
+      - "8989:8989/tcp"
+    pull_policy: always
+    networks:
+      - media_net
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:0.22.1800
+    container_name: jackett
+    network_mode: "service:vpn"
+    depends_on:
+      - vpn
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - AUTO_UPDATE=true
+    volumes:
+      - ./config/jackett:/config
+    restart: unless-stopped
+
+networks:
+  media_net:

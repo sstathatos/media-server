@@ -1,0 +1,12 @@
+# Ignore everything under config/
+config/**
+
+# Allow directory structure and matching files
+# !config/
+# !config/**/
+# !config/**/*.json
+# !config/**/*.yaml
+# !config/**/*.yml
+
+
+.env
