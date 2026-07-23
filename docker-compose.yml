@@ -1,6 +1,6 @@
 services:
   plex:
-    image: lscr.io/linuxserver/plex:1.41.8
+    image: lscr.io/linuxserver/plex:latest
     container_name: plex
     restart: unless-stopped
     volumes:
@@ -22,7 +22,7 @@ services:
       - media_net
 
   bazarr:
-    image: lscr.io/linuxserver/bazarr:1.5.1
+    image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr
     restart: unless-stopped
     volumes:
@@ -35,7 +35,7 @@ services:
       - media_net
 
   vpn:
-    image: qmcgaw/gluetun:v3.40.0
+    image: qmcgaw/gluetun:v3.41.1
     container_name: vpn
     cap_add:
       - NET_ADMIN
@@ -45,7 +45,7 @@ services:
       - VPN_SERVICE_PROVIDER=private internet access
       - OPENVPN_USER=${OPENVPN_USER}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - SERVER_REGIONS=Netherlands
+      - SERVER_REGIONS=Cyprus
       - TZ=Europe/Athens
       - FIREWALL=on
       - DOT=on
@@ -58,7 +58,7 @@ services:
       - media_net
 
   deluge:
-    image: lscr.io/linuxserver/deluge:2.1.1
+    image: lscr.io/linuxserver/deluge:latest
     container_name: deluge
     network_mode: "service:vpn"
     depends_on:
@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
 
   radarr:
-    image: lscr.io/linuxserver/radarr:5.21.1
+    image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     restart: unless-stopped
     volumes:
@@ -82,8 +82,9 @@ services:
     pull_policy: always
     networks:
       - media_net
+
   sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.14
+    image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     restart: unless-stopped
     volumes:
@@ -93,23 +94,6 @@ services:
     ports:
       - "8989:8989/tcp"
     pull_policy: always
-    networks:
-      - media_net
-
-  jackett:
-    image: lscr.io/linuxserver/jackett:latest
-    container_name: jackett
-    pull_policy: always
-    ports:
-      - "9117:9117"
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Athens
-    volumes:
-      - ./config/jackett:/config
-      - $MEDIADIR/torrents:/downloads
-    restart: unless-stopped
     networks:
       - media_net
 
@@ -129,18 +113,8 @@ services:
     networks:
       - media_net
 
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
-    restart: unless-stopped
-    ports:
-        - "8191:8191"
-    pull_policy: always
-    networks:
-      - media_net
-  
   tailscale:
-    image: tailscale/tailscale
+    image: tailscale/tailscale:latest
     container_name: tailscale
     pull_policy: always
     network_mode: "host"
@@ -154,7 +128,6 @@ services:
       - TS_AUTHKEY=${TAILSCALE_AUTHKEY}
       - TS_STATE_DIR=/var/lib/tailscale
     restart: unless-stopped
-
 
 networks:
   media_net:
