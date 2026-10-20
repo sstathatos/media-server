@@ -8,5 +8,5 @@ config/**
 # !config/**/*.yaml
 # !config/**/*.yml
 
-
+.vscode
 .env

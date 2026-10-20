@@ -35,7 +35,7 @@ services:
       - media_net
 
   vpn:
-    image: qmcgaw/gluetun:v3.41.1
+    image: qmcgaw/gluetun:v3
     container_name: vpn
     cap_add:
       - NET_ADMIN
@@ -45,11 +45,21 @@ services:
       - VPN_SERVICE_PROVIDER=private internet access
       - OPENVPN_USER=${OPENVPN_USER}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - SERVER_REGIONS=Cyprus
+      # Several PF-capable regions so a dead endpoint doesn't take the stack down.
+      - SERVER_REGIONS=Cyprus,Greece,Romania,Bulgaria,Netherlands
+      - PORT_FORWARD_ONLY=on
+      # Without a forwarded port Deluge accepts no incoming peers, which makes
+      # every torrent slow regardless of how many seeders it has.
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
+      # Keeps /gluetun/servers.json current; a stale list means dead server IPs.
+      - UPDATER_PERIOD=24h
       - TZ=Europe/Athens
       - FIREWALL=on
       - DOT=on
       - HEALTH_TARGET_ADDRESS=1.1.1.1:53
+    volumes:
+      - ./config/vpn:/gluetun
     ports:
       - "8112:8112/tcp"
     restart: unless-stopped
@@ -67,6 +77,21 @@ services:
     volumes:
       - ./config/deluge:/config
       - $MEDIADIR/torrents:/data/torrents
+    restart: unless-stopped
+
+  # Pushes Gluetun's forwarded port into Deluge's listen port whenever it changes.
+  deluge-port-sync:
+    image: alpine/curl:latest
+    container_name: deluge-port-sync
+    entrypoint: ["/bin/sh", "/scripts/deluge-port-sync.sh"]
+    network_mode: "service:vpn"
+    depends_on:
+      - vpn
+      - deluge
+    environment:
+      - DELUGE_PASSWORD=${DELUGE_PASSWORD:-deluge}
+    volumes:
+      - ./scripts:/scripts:ro
     restart: unless-stopped
 
   radarr:
